@@ -1,27 +1,27 @@
-package classfinder;
+package commons.resource.classfinder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Finds all classes accessible from the context class loader which belong to the given package and subpackages.
  */
 public class ClassFinder {
 
-	private String packageName;
+	private final String packageName;
 	
 	public ClassFinder(String packageName) {
 		super();
 		this.packageName = packageName;
 	}
-	
+
 	/**
      * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
      *
-     * @param packageName The base package
      * @return The classes
      * @throws ClassNotFoundException
      * @throws IOException
@@ -36,7 +36,7 @@ public class ClassFinder {
         Enumeration<URL> resources = classLoader.getResources(path);
         List<File> dirs = new ArrayList<>();
         while (resources.hasMoreElements()) {
-            URL resource = (URL) resources.nextElement();
+            URL resource = resources.nextElement();
             dirs.add(new File(resource.getFile()));
         }
 
@@ -45,7 +45,7 @@ public class ClassFinder {
             classes.addAll(findClasses(directory, packageName));
         }
 
-        return classes.toArray(new Class[classes.size()]);
+        return classes.toArray(new Class[0]);
     }
 
     /**
@@ -65,7 +65,9 @@ public class ClassFinder {
             return classes;
         }
 
-        File[] files = directory.listFiles();
+        File[] files = Optional.of(directory)
+            .map(File::listFiles)
+            .orElse(new File[0]);
 
         for (File file : files) {
             if (file.isDirectory()) {
